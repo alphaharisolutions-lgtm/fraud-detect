@@ -252,20 +252,40 @@
                 if (result.is_fraud) {
                     resultContent.className = 'card-body p-4 fraud-alert';
                     resultContent.innerHTML = `
-                    <div class="d-flex align-items-center mb-3">
+                    <div class="d-flex align-items-center mb-4">
                         <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
-                        <h4 class="mb-0 fw-bold">Fraud Detected!</h4>
+                        <div>
+                            <h4 class="mb-0 fw-bold">Fraud Alert Detected!</h4>
+                            <small class="fw-bold opacity-75">Verification Failed</small>
+                        </div>
                     </div>
-                    <p class="mb-0">This transaction shows patterns consistent with fraudulent activity. Prediction Score: <strong>${(result.prediction_score * 100).toFixed(2)}%</strong></p>
+                    <div class="bg-white rounded-4 p-3 mb-2 text-dark shadow-sm">
+                        <div class="row g-3">
+                            <div class="col-6"><small class="text-muted d-block text-uppercase small fw-bold">UTR Number</small> <strong>${data.utr_number}</strong></div>
+                            <div class="col-6"><small class="text-muted d-block text-uppercase small fw-bold">Amount</small> <strong>₹${parseFloat(data.amount).toLocaleString()}</strong></div>
+                            <div class="col-6"><small class="text-muted d-block text-uppercase small fw-bold">Location</small> <strong>${data.location}</strong></div>
+                            <div class="col-6"><small class="text-muted d-block text-uppercase small fw-bold">Risk Score</small> <strong class="text-danger">${(result.prediction_score * 100).toFixed(2)}%</strong></div>
+                        </div>
+                    </div>
                 `;
                 } else {
                     resultContent.className = 'card-body p-4 genuine-alert';
                     resultContent.innerHTML = `
-                    <div class="d-flex align-items-center mb-3">
+                    <div class="d-flex align-items-center mb-4">
                         <i class="fas fa-check-circle fa-2x me-3"></i>
-                        <h4 class="mb-0 fw-bold">Transaction Secured</h4>
+                        <div>
+                            <h4 class="mb-0 fw-bold">Transaction Secured</h4>
+                            <small class="fw-bold opacity-75">Verified & Legitimate</small>
+                        </div>
                     </div>
-                    <p class="mb-0">This transaction appears to be safe and genuine. Prediction Score: <strong>${(result.prediction_score * 100).toFixed(2)}%</strong></p>
+                    <div class="bg-white rounded-4 p-3 mb-2 text-dark shadow-sm">
+                        <div class="row g-3">
+                            <div class="col-6"><small class="text-muted d-block text-uppercase small fw-bold">UTR Number</small> <strong>${data.utr_number}</strong></div>
+                            <div class="col-6"><small class="text-muted d-block text-uppercase small fw-bold">Amount</small> <strong>₹${parseFloat(data.amount).toLocaleString()}</strong></div>
+                            <div class="col-6"><small class="text-muted d-block text-uppercase small fw-bold">Location</small> <strong>${data.location}</strong></div>
+                            <div class="col-6"><small class="text-muted d-block text-uppercase small fw-bold">Risk Score</small> <strong class="text-success">${(result.prediction_score * 100).toFixed(2)}%</strong></div>
+                        </div>
+                    </div>
                 `;
                 }
             } catch (error) {
