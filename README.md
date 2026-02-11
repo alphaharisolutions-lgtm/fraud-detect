@@ -4,17 +4,17 @@ SafePay is a modern web application designed to detect fraudulent transactions u
 
 ## 🚀 Features
 
-- **Real-time Prediction**: Instantly classify transactions as fraudulent or genuine.
+- **Real-time Prediction**: Instantly classify transactions using unique **UTR Numbers**.
 - **Admin Dashboard**: Comprehensive analytics with Chart.js visualization.
-- **Deep Learning Model**: CNN-LSTM architecture for high accuracy detection.
-- **RESTful API**: Flask-based backend for seamless frontend-model communication.
+- **Random Forest Model**: Optimized classifier for Python 3.14 with high accuracy.
+- **RESTful API**: Flask-based backend for seamless communication.
 - **Aesthetic UI**: Premium design using Bootstrap 5 and modern styling.
 
 ## 🛠 Tech Stack
 
 - **Frontend**: HTML5, CSS3, JavaScript, Bootstrap 5, Chart.js.
-- **Backend**: Python, Flask, SQLite.
-- **Machine Learning**: TensorFlow, Keras, NumPy, Pandas, Scikit-learn.
+- **Backend**: Python 3.14, Flask, SQLite.
+- **Machine Learning**: Scikit-learn (Random Forest), Pandas, NumPy, Joblib.
 
 ## 📂 Project Structure
 
