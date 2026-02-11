@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafePay | Fraud Detection System</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --secondary: #ec4899;
+            --dark: #0f172a;
+            --light: #f8fafc;
+            --accent: #10b981;
+            --danger: #ef4444;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--light);
+            color: var(--dark);
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        .navbar {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .hero-section {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 100px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-section::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('https://www.transparenttextures.com/patterns/cubes.png');
+            opacity: 0.1;
+        }
+
+        .card {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .form-control {
+            border-radius: 12px;
+            padding: 12px 20px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .form-control:focus {
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+            border-color: var(--primary);
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            border: none;
+            border-radius: 12px;
+            padding: 12px 30px;
+            font-weight: 600;
+        }
+
+        .btn-primary:hover {
+            background-color: #4338ca;
+        }
+
+        #result-card {
+            display: none;
+            margin-top: 30px;
+        }
+
+        .fraud-alert {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border-left: 5px solid #ef4444;
+        }
+
+        .genuine-alert {
+            background-color: #dcfce7;
+            color: #166534;
+            border-left: 5px solid #22c55e;
+        }
+
+        .loader {
+            display: none;
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-light sticky-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-primary" href="/"><i class="fas fa-shield-halved me-2"></i>SafePay</a>
+            <div class="ms-auto">
+                <a href="/dashboard" class="btn btn-outline-primary rounded-pill px-4">Admin Dashboard</a>
+            </div>
+        </div>
+    </nav>
+
+    <section class="hero-section">
+        <div class="container position-relative" style="z-index: 1;">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h1 class="display-4 fw-bold mb-4">Real-time Fraud Detection with AI</h1>
+                    <p class="lead mb-5 opacity-90">Secure your transactions using our advanced CNN-LSTM deep learning
+                        model. Get instant predictions and protect your business from fraudulent activities.</p>
+                    <a href="#transaction-form"
+                        class="btn btn-light btn-lg rounded-pill px-5 py-3 fw-bold text-primary">Test Transaction</a>
+                </div>
+                <div class="col-lg-6 d-none d-lg-block">
+                    <img src="https://img.freepik.com/premium-vector/online-registration-sign-up-concept-with-man-character_268404-98.jpg"
+                        alt="Security" class="img-fluid rounded-4 shadow-lg">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <main class="container my-5 py-5" id="transaction-form">
+        <div class="row justify-content-center">
+            <div class="col-md-7">
+                <div class="card p-4 p-md-5">
+                    <h3 class="fw-bold mb-4 text-center">New Transaction Details</h3>
+                    <form id="fraud-form">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Transaction Amount (INR)</label>
+                            <input type="number" step="0.01" class="form-control" id="amount" placeholder="e.g. 1500.50"
+                                required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">UTR Number</label>
+                                <input type="text" class="form-control" id="utr_number" placeholder="UTR-9876543210"
+                                    required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">Location</label>
+                                <select class="form-select form-control" id="location">
+                                    <option value="Mumbai">Mumbai</option>
+                                    <option value="Delhi">Delhi</option>
+                                    <option value="Bangalore">Bangalore</option>
+                                    <option value="Chennai">Chennai</option>
+                                    <option value="Others">Others</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">Transaction Time</label>
+                                <input type="time" class="form-control" id="time" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">Frequency (Last 24h)</label>
+                                <input type="number" class="form-control" id="frequency" placeholder="e.g. 3" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 py-3 mt-4">Analyze Transaction</button>
+                    </form>
+
+                    <div class="loader" id="loader"></div>
+
+                    <div id="result-card" class="card mt-4 overflow-hidden">
+                        <div class="card-body p-4" id="result-content">
+                            <!-- Result will be injected here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-dark text-white py-5">
+        <div class="container text-center">
+            <p class="opacity-50 mb-0">&copy; 2026 SafePay Systems. Powered by Deep Learning.</p>
+        </div>
+    </footer>
+
+    <!-- JS dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('fraud-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const loader = document.getElementById('loader');
+            const resultCard = document.getElementById('result-card');
+            const resultContent = document.getElementById('result-content');
+
+            loader.style.display = 'block';
+            resultCard.style.display = 'none';
+
+            const data = {
+                amount: document.getElementById('amount').value,
+                utr_number: document.getElementById('utr_number').value,
+                location: document.getElementById('location').value,
+                time: document.getElementById('time').value,
+                frequency: document.getElementById('frequency').value
+            };
+
+            try {
+                const response = await fetch('/api/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                loader.style.display = 'none';
+                resultCard.style.display = 'block';
+
+                if (result.is_fraud) {
+                    resultContent.className = 'card-body p-4 fraud-alert';
+                    resultContent.innerHTML = `
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
+                        <h4 class="mb-0 fw-bold">Fraud Detected!</h4>
+                    </div>
+                    <p class="mb-0">This transaction shows patterns consistent with fraudulent activity. Prediction Score: <strong>${(result.prediction_score * 100).toFixed(2)}%</strong></p>
+                `;
+                } else {
+                    resultContent.className = 'card-body p-4 genuine-alert';
+                    resultContent.innerHTML = `
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fas fa-check-circle fa-2x me-3"></i>
+                        <h4 class="mb-0 fw-bold">Transaction Secured</h4>
+                    </div>
+                    <p class="mb-0">This transaction appears to be safe and genuine. Prediction Score: <strong>${(result.prediction_score * 100).toFixed(2)}%</strong></p>
+                `;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                loader.style.display = 'none';
+                alert('Something went wrong. Please try again.');
+            }
+        });
+    </script>
+
+</body>
+
+</html>
