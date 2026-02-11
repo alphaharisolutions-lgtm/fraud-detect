@@ -4,7 +4,7 @@ import random
 def seed_data():
     with app.app_context():
         # Clear existing data
-        # db.drop_all() # Optional: use with caution
+        db.drop_all() 
         db.create_all()
         
         merchants = ["Amazon", "Flipkart", "Uber", "Swiggy", "Zomato", "Reliance", "Starbucks"]

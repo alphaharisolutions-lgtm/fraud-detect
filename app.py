@@ -3,13 +3,16 @@ print("Starting SafePay Flask Application...")
 from flask import Flask, render_template, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
+import numpy as np
 import os
 
 app = Flask(__name__)
 CORS(app)
 
 # Database configuration
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///fraud_detection.db'
+basedir = os.path.abspath(os.path.dirname(__file__))
+db_path = os.path.join(basedir, 'instance', 'fraud_detection.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
@@ -75,47 +78,55 @@ scaler = None
 
 @app.route('/api/predict', methods=['POST'])
 def predict():
-    data = request.json
-    amount = float(data.get('amount', 0))
-    # Map time (HH:MM) to hour (0-23)
-    time_str = data.get('time', '00:00')
-    hour = int(time_str.split(':')[0])
-    frequency = int(data.get('frequency', 1))
-    
-    # Simple location encoding for demo
-    location_map = {"Mumbai": 0, "Delhi": 1, "Bangalore": 2, "Chennai": 3, "Others": 4}
-    location_idx = location_map.get(data.get('location'), 4)
-
-    if model and scaler:
-        # Prepare input features: amount, hour, frequency, location_idx
-        features = np.array([[amount, hour, frequency, location_idx]])
-        features_scaled = scaler.transform(features)
+    try:
+        data = request.json
+        print(f"Received prediction request: {data}")
+        amount = float(data.get('amount', 0))
+        # Map time (HH:MM) to hour (0-23)
+        time_str = data.get('time', '00:00')
+        hour = int(time_str.split(':')[0])
+        frequency = int(data.get('frequency', 1))
         
-        # Predict probability for class 1 (Fraud)
-        prediction_score = float(model.predict_proba(features_scaled)[0][1])
-        is_fraud = prediction_score > 0.5
-    else:
-        # Fallback dummy logic if model not loaded
-        prediction_score = 0.9 if amount > 10000 else 0.1
-        is_fraud = amount > 10000
-    
-    new_transaction = Transaction(
-        amount=amount,
-        utr_number=data.get('utr_number', 'N/A'),
-        location=data.get('location', 'Global'),
-        time=time_str,
-        frequency=frequency,
-        is_fraud=is_fraud,
-        prediction_score=prediction_score
-    )
-    db.session.add(new_transaction)
-    db.session.commit()
-    
-    return jsonify({
-        "status": "success",
-        "is_fraud": bool(is_fraud),
-        "prediction_score": prediction_score
-    })
+        # Simple location encoding for demo
+        location_map = {"Mumbai": 0, "Delhi": 1, "Bangalore": 2, "Chennai": 3, "Others": 4}
+        location_idx = location_map.get(data.get('location'), 4)
+
+        if model and scaler:
+            # Prepare input features: amount, hour, frequency, location_idx
+            features = np.array([[amount, hour, frequency, location_idx]])
+            features_scaled = scaler.transform(features)
+            
+            # Predict probability for class 1 (Fraud)
+            prediction_score = float(model.predict_proba(features_scaled)[0][1])
+            is_fraud = prediction_score > 0.5
+            print(f"Prediction successful: Score={prediction_score}, IsFraud={is_fraud}")
+        else:
+            # Fallback dummy logic if model not loaded
+            prediction_score = 0.9 if amount > 10000 else 0.1
+            is_fraud = amount > 10000
+            print(f"No model loaded. Using fallback logic. IsFraud={is_fraud}")
+        
+        new_transaction = Transaction(
+            amount=amount,
+            utr_number=data.get('utr_number', 'N/A'),
+            location=data.get('location', 'Global'),
+            time=time_str,
+            frequency=frequency,
+            is_fraud=is_fraud,
+            prediction_score=prediction_score
+        )
+        db.session.add(new_transaction)
+        db.session.commit()
+        print("Transaction saved to database successfully.")
+        
+        return jsonify({
+            "status": "success",
+            "is_fraud": bool(is_fraud),
+            "prediction_score": prediction_score
+        })
+    except Exception as e:
+        print(f"Error in prediction API: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route('/api/transactions', methods=['GET'])
 def get_transactions():
